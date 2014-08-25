@@ -1,6 +1,8 @@
 package com.badwater.Markov;
 
-import java.io.Serializable;
+import com.badwater.Logger.Logger;
+
+import java.io.*;
 import java.util.HashMap;
 
 /**
@@ -8,11 +10,14 @@ import java.util.HashMap;
  */
 public class MarkovChain implements Serializable {
 	private HashMap<String, HashMap<String, Integer>> chains = new HashMap<String, HashMap<String, Integer>> ();
+	private Logger logger;
 
-	public MarkovChain() {
+	public MarkovChain(Logger logger) throws IOException, ClassNotFoundException {
+		this.logger = logger;
+		loadChains ();
 	}
 
-	public synchronized void genChain(String[] msg) {
+	public synchronized void genChain(String[] msg) throws IOException {
 		//iterate over the msg array setting both primary and next keys.
 		for ( int i = 0; i < msg.length - 2; i++ ) {
 			String priKey = msg[i];
@@ -40,16 +45,51 @@ public class MarkovChain implements Serializable {
 			}
 		}
 	}
-
 	public synchronized void printChains() {
 		for ( String key : chains.keySet () ) {
 			System.out.println ( key );
 			for ( String key1 : chains.get ( key ).keySet () ) {
-				System.out.println ( "\t" + key1 + "\t" + chains.get ( key ).get ( key1 ));
+				System.out.println ( "\t" + key1 + "\t" + chains.get ( key ).get ( key1 ) );
 
 			}
 		}
 	}
+
+	public synchronized boolean saveChains() throws IOException {
+		boolean success = false;
+		File file = new File("./Markov");
+		if(!file.exists ()){
+			logger.log("Markov Directory does Not Exist.  Creating! " + file.mkdirs ());
+		}
+
+		else{
+			try(FileOutputStream fos = new FileOutputStream ( file + "/Markov.Chains"  );
+			    ObjectOutputStream chainSaver = new ObjectOutputStream ( fos )){
+				logger.log("Saving Chains to: " + file + "Markov.Chains");
+				chainSaver.writeObject ( chains );
+				logger.log("Success!");
+				success = true;
+			}
+		}
+		return success;
+	}
+
+	private void loadChains() throws IOException, ClassNotFoundException {
+		File file = new File ( "./Markov/Markov.Chains" );
+		if ( !file.exists () ) {
+			logger.log (
+				   "Markov.Chains does not exist @: " + file.getPath () + " Please Call SaveChains to Create it" +
+				   "." );
+		}
+		else {
+			try (FileInputStream fis = new FileInputStream ( file );
+			     ObjectInputStream chainLoader = new ObjectInputStream ( new BufferedInputStream ( fis ) )) {
+				chains = (HashMap<String, HashMap<String, Integer>>) chainLoader.readObject ();
+				logger.log ( "Chains Loaded Successfully from: " + file.getPath () );
+			}
+		}
+	}
+
 
 	public void generateNextLikelyWord(String word) {
 	}

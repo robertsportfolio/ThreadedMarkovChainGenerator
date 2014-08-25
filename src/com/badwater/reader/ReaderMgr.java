@@ -1,8 +1,10 @@
 package com.badwater.reader;
 
+import com.badwater.Logger.Logger;
 import com.badwater.Markov.MarkovChain;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,11 +20,13 @@ public class ReaderMgr {
 	private final ExecutorService executor;
 	private ArrayList<File> files = new ArrayList<File> ();
 	private  MarkovChain mC;
-	public ReaderMgr(String path){
+	private Logger logger;
+	public ReaderMgr(String path, Logger logger) throws IOException, ClassNotFoundException {
 		//ctor:
 		directory = new File ( path );
+		this.logger = logger;
 		//create a new MarkovChainGenerator
-		mC = new MarkovChain ();
+		mC = new MarkovChain (this.logger);
 		//create a new executor service, and execute it.
 		executor = Executors.newFixedThreadPool ( MAX_THREADS );
 		getFiles(directory);
@@ -33,8 +37,14 @@ public class ReaderMgr {
 			executor.awaitTermination ( 10, TimeUnit.MINUTES );
 		} catch (InterruptedException e) {
 			//if it doesn't, put it down forcefully.  (Should never happen, but you never know.)
-			System.out.println("Clean Shutdown failed due to timeout.  Forcing");
+			logger.log ( "Clean Shutdown failed due to timeout.  Forcing" );
 			executor.shutdownNow ();
+		}
+		if(!mC.saveChains ()){
+			logger.log("Unknown Error Saving Chains");
+		}
+		else{
+			logger.log ( "Chains saved Successfully!" );
 		}
 		mC.printChains ();
 
@@ -63,7 +73,7 @@ public class ReaderMgr {
 	private void execute(){
 		//create a new reader for each file in our folder, and add them to the queue.
 		for(File f : files){
-			Runnable worker = new Reader(f, mC );
+			Runnable worker = new Reader(f, mC , logger );
 			executor.execute ( worker );
 		}
 		//clear our list of files to ensure that if we call this class again, it's clear.  Yes, I know,
