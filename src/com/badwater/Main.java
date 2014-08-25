@@ -18,7 +18,7 @@ public class Main {
 		 *
 		 */
 		Logger logger = new Logger (LOG_PATH);
-		ReaderMgr rMgr = new ReaderMgr ( "./gtbtmp", logger );
+		ReaderMgr rMgr = new ReaderMgr ( "./gtb/", logger );
 
 
 	}
