@@ -1,7 +1,6 @@
 package com.badwater.Markov;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -9,8 +8,6 @@ import java.util.HashMap;
  */
 public class MarkovChain implements Serializable {
 	private HashMap<String, HashMap<String, Integer>> chains = new HashMap<String, HashMap<String, Integer>> ();
-	private ArrayList<String[]> queue = new ArrayList<String[]> ();
-	private boolean queueProcessing = false;
 
 	public MarkovChain() {
 	}
@@ -46,7 +43,7 @@ public class MarkovChain implements Serializable {
 			System.out.println ( key );
 			for ( String key1 : chains.get ( key ).keySet () ) {
 				System.out.println ( "\t" + key1 + "\t" + chains.get ( key ).get ( key1 ));
-				
+
 			}
 		}
 	}
