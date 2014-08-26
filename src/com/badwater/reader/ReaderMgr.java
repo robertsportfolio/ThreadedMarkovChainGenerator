@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 public class ReaderMgr {
 
 	private File directory;
-	private final int MAX_THREADS = 100;
+	private final int MAX_THREADS = 50;
 	private final ExecutorService executor;
 	private ArrayList<File> files = new ArrayList<File> ();
 	private MarkovChain mC;
