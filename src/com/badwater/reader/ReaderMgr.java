@@ -19,34 +19,36 @@ public class ReaderMgr {
 	private final int MAX_THREADS = 100;
 	private final ExecutorService executor;
 	private ArrayList<File> files = new ArrayList<File> ();
-	private  MarkovChain mC;
+	private MarkovChain mC;
 	private Logger logger;
+
 	public ReaderMgr(String path, Logger logger) throws IOException, ClassNotFoundException {
 		//ctor:
 		directory = new File ( path );
 		this.logger = logger;
 		//create a new MarkovChainGenerator
-		mC = new MarkovChain (this.logger);
+		mC = new MarkovChain ( this.logger );
 		//create a new executor service, and execute it.
 		executor = Executors.newFixedThreadPool ( MAX_THREADS );
-		getFiles(directory);
+		getFiles ( directory );
 		execute ();
 		//try to shutdown cleanly.
 		executor.shutdown ();
 		try {
 			executor.awaitTermination ( 10, TimeUnit.MINUTES );
+			if ( !mC.saveChains () ) {
+				logger.log ( "Unknown Error Saving Chains" );
+			}
+			else {
+				logger.log ( "Chains saved Successfully!" );
+			}
 			mC.printChains ();
 		} catch (InterruptedException e) {
 			//if it doesn't, put it down forcefully.  (Should never happen, but you never know.)
 			logger.log ( "Clean Shutdown failed due to timeout.  Forcing" );
 			executor.shutdownNow ();
 		}
-		if(!mC.saveChains ()){
-			logger.log("Unknown Error Saving Chains");
-		}
-		else{
-			logger.log ( "Chains saved Successfully!" );
-		}
+
 
 	}
 
@@ -70,14 +72,15 @@ public class ReaderMgr {
 			}
 		}
 	}
-	private void execute(){
+
+	private void execute() {
 		//create a new reader for each file in our folder, and add them to the queue.
-		for(File f : files){
-			Runnable worker = new Reader(f, mC , logger );
+		for ( File f : files ) {
+			Runnable worker = new Reader ( f, mC, logger );
 			executor.execute ( worker );
 		}
 		//clear our list of files to ensure that if we call this class again, it's clear.  Yes, I know,
 		//Its redundant, but I like to be sure.
-		files.clear();
+		files.clear ();
 	}
 }
