@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by irinix on 8/24/14.
@@ -29,11 +30,12 @@ public class ReaderMgr {
 		//create a new executor service, and execute it.
 		executor = Executors.newFixedThreadPool ( MAX_THREADS );
 		getFiles(directory);
-		/*execute ();
+		execute ();
 		//try to shutdown cleanly.
 		executor.shutdown ();
 		try {
 			executor.awaitTermination ( 10, TimeUnit.MINUTES );
+			mC.printChains ();
 		} catch (InterruptedException e) {
 			//if it doesn't, put it down forcefully.  (Should never happen, but you never know.)
 			logger.log ( "Clean Shutdown failed due to timeout.  Forcing" );
@@ -44,8 +46,7 @@ public class ReaderMgr {
 		}
 		else{
 			logger.log ( "Chains saved Successfully!" );
-		}*/
-		mC.printChains ();
+		}
 
 	}
 
